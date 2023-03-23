@@ -1,3 +1,5 @@
-from django.urls import path, include # noqa
+from django.urls import path, include
 
-urlpatterns = []
+urlpatterns = [
+    path('users/', include('apps.users.urls.user')),
+]
