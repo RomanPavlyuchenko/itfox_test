@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from .installed_apps import *
+from .installed_apps import INSTALLED_APPS, MIGRATION_MODULES # noqa
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -121,7 +121,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'ROTATE_REFRESH_TOKENS': True,
 }
