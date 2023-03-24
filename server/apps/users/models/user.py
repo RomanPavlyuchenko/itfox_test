@@ -8,6 +8,10 @@ class User(AbstractUser):
         unique=True,
         verbose_name='Email',
     )
+    is_admin = models.BooleanField(
+        default=False,
+        verbose_name='Админ'
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

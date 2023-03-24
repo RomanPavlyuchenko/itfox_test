@@ -1,7 +1,8 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
-from .installed_apps import INSTALLED_APPS # noqa
+from .installed_apps import *
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -116,4 +117,11 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': True,
 }
