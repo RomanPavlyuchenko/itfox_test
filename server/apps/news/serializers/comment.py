@@ -20,7 +20,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('title', 'news', 'id')
+        fields = ('text', 'news')
 
     def create(self, validated_data: dict) -> Comment:
         validated_data['author'] = self.context['request'].user

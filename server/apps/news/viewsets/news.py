@@ -12,7 +12,7 @@ from ..permissions import IsAdminOrAuthor
 
 class NewsViewSet(viewsets.ModelViewSet):
     serializer_class = NewsSerializer
-    # permission_classes = (IsAuthenticated, IsAdminOrAuthor)
+    permission_classes = (IsAuthenticated, IsAdminOrAuthor)
     pagination_class = pagination.LimitOffsetPagination
     pagination_class.default_limit = 10
     comments_limit = 10
@@ -46,12 +46,12 @@ class NewsViewSet(viewsets.ModelViewSet):
 
     @action(methods=('GET',), detail=False, url_path='(?P<pk>[^/.]+)/comments',)
     def get_news_comments(self, request: Request, pk=None) -> Response:
-        queryset = self.get_object().comments.all()
-        page = self.paginate_queryset(queryset)
+        news_comments = self.get_object().comments.all()
+        page = self.paginate_queryset(news_comments)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(news_comments, many=True)
         return Response(serializer.data)
 
     @action(methods=('GET',), detail=False, url_path='(?P<pk>[^/.]+)/(un)?like',)
