@@ -1,28 +1,40 @@
 from rest_framework import viewsets, pagination
-from django.db.models import QuerySet, Count
+from django.db.models import QuerySet, Count, Prefetch, Subquery, OuterRef
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from ..models import News, Like
+from ..models import News, Like, Comment
 from ..serializers import NewsSerializer, NewsCreateSerializer, CommentListSerializer
 from ..permissions import IsAdminOrAuthor
 
 
 class NewsViewSet(viewsets.ModelViewSet):
     serializer_class = NewsSerializer
-    permission_classes = (IsAuthenticated, IsAdminOrAuthor)
+    # permission_classes = (IsAuthenticated, IsAdminOrAuthor)
     pagination_class = pagination.LimitOffsetPagination
     pagination_class.default_limit = 10
+    comments_limit = 10
 
     def get_queryset(self) -> QuerySet:
-        queryset = News.objects.all().prefetch_related(
-            'comments', 'likes'
-        ).annotate(
-            comments_count=Count('comments', distinct=True),
-            likes_count=Count('likes', distinct=True)
-        )
+        queryset = News.objects.all()
+        if self.action in ('retrieve', 'list'):
+            subquery = Subquery(Comment.objects.filter(
+                news_id=OuterRef('news_id')
+            ).values_list('id')[:self.comments_limit])
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    'comments',
+                    queryset=Comment.objects.filter(id__in=subquery)
+                ),
+                'likes'
+            ).annotate(
+                comments_count=Count('comments', distinct=True),
+                likes_count=Count('likes', distinct=True)
+            )
+        elif self.action == 'get_news_comments':
+            queryset = queryset.prefetch_related('comments')
         return queryset
 
     def get_serializer_class(self):
