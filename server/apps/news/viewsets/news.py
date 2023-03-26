@@ -1,11 +1,11 @@
 from rest_framework import viewsets, pagination
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Count
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from ..models import News
+from ..models import News, Like
 from ..serializers import NewsSerializer, NewsCreateSerializer, CommentListSerializer
 from ..permissions import IsAdminOrAuthor
 
@@ -17,7 +17,12 @@ class NewsViewSet(viewsets.ModelViewSet):
     pagination_class.default_limit = 10
 
     def get_queryset(self) -> QuerySet:
-        queryset = News.objects.all().prefetch_related('comments')
+        queryset = News.objects.all().prefetch_related(
+            'comments', 'likes'
+        ).annotate(
+            comments_count=Count('comments', distinct=True),
+            likes_count=Count('likes', distinct=True)
+        )
         return queryset
 
     def get_serializer_class(self):
@@ -36,3 +41,17 @@ class NewsViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(methods=('GET',), detail=False, url_path='(?P<pk>[^/.]+)/(un)?like',)
+    def set_news_like(self, request: Request, pk=None) -> Response:
+        url_like = request.get_full_path().split('/')[-2]
+        obj = self.get_object()
+        like = obj.likes.filter(user=request.user)
+
+        if url_like == 'like' and not like:
+            Like.objects.create(user=request.user, news=obj)
+
+        if url_like == 'unlike' and like:
+            like.delete()
+
+        return super().retrieve(request, pk)

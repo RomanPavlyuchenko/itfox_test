@@ -7,10 +7,15 @@ from .comment import CommentListSerializer
 
 class NewsSerializer(serializers.ModelSerializer):
     comments = CommentListSerializer(many=True)
+    comments_count = serializers.IntegerField()
+    likes_count = serializers.IntegerField()
 
     class Meta:
         model = News
-        fields = ('id', 'author', 'create_date', 'title', 'text', 'comments')
+        fields = (
+            'id', 'author', 'create_date', 'title',
+            'text', 'comments_count', 'likes_count', 'comments'
+        )
 
 
 class NewsCreateSerializer(serializers.ModelSerializer):
