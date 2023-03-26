@@ -19,7 +19,7 @@ class NewsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         queryset = News.objects.all()
-        if self.action in ('retrieve', 'list'):
+        if self.action in ('retrieve', 'list', 'set_news_like'):
             subquery = Subquery(Comment.objects.filter(
                 news_id=OuterRef('news_id')
             ).values_list('id')[:self.comments_limit])
